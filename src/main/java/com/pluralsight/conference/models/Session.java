@@ -1,7 +1,15 @@
 package com.pluralsight.conference.models;
 
-import javax.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.util.List;
+
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "sessionID")
 @Entity(name = "sessions")
 public class Session {
     @Id
@@ -9,16 +17,34 @@ public class Session {
     @Column(name = "session_id")
     private Long sessionID;
 
+    @NotNull
     @Column(name = "session_name")
     private String sessionName;
 
+    @NotNull
     @Column(name = "session_description")
     private String sessionDescription;
 
+    @NotNull
     @Column(name = "session_length")
     private Integer sessionLength;
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "session_speakers",
+            joinColumns = @JoinColumn(name = "session_id"),
+            inverseJoinColumns = @JoinColumn(name = "speaker_id"))
+    private List<Speaker> speakers;
+
     public Session() {
+    }
+
+    public List<Speaker> getSpeakers() {
+        return speakers;
+    }
+
+    public void setSpeakers(List<Speaker> speakers) {
+        this.speakers = speakers;
     }
 
     public Long getSessionID() {
