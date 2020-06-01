@@ -1,15 +1,20 @@
 package com.pluralsight.conference.models;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
-@JsonIdentityInfo(
+// with jsonidentity info you can avopid jackson infinite recursion problems
+/*@JsonIdentityInfo(
         generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "sessionID")
+        property = "sessionID")*/
+//in this example we are ignoring the Speaker side of the relatioship
+//you also need to exclude hibernate properties from serialization
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity(name = "sessions")
 public class Session {
     @Id

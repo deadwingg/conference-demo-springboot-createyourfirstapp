@@ -1,16 +1,18 @@
 package com.pluralsight.conference.controllers;
 
+import com.pluralsight.conference.exceptions.MissingParameterException;
+import com.pluralsight.conference.exceptions.ResourceNotFoundException;
 import com.pluralsight.conference.models.Session;
 import com.pluralsight.conference.repositories.SessionRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/sessions")
@@ -35,7 +37,10 @@ public class SessionsController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Session create(@RequestBody final Session session){
+    public Session create(@Valid @RequestBody final Session session, BindingResult bindingResult){
+        if (bindingResult.hasErrors()){
+            throw new MissingParameterException("You must provide all fields");
+        }
         return sessionRepository.saveAndFlush(session);
     }
 
@@ -48,9 +53,14 @@ public class SessionsController {
     public Session update(@PathVariable Long id, @RequestBody @Valid Session session, BindingResult bindingResult){
         if (bindingResult.hasErrors()){
             //throw bad request exception
+            throw new MissingParameterException("You must provide all fields");
         }
-        Session existingSession = sessionRepository.getOne(id);
-        BeanUtils.copyProperties(session, existingSession, "sessionID");
-        return sessionRepository.saveAndFlush(existingSession);
+        Optional<Session> existingSession = sessionRepository.findById(id);
+        if (existingSession.isPresent() == false){
+            throw new ResourceNotFoundException("Session not found");
+        }
+        System.out.println("aca no deberia llegar en invalido");
+        BeanUtils.copyProperties(session, existingSession.get(), "sessionID");
+        return sessionRepository.saveAndFlush(existingSession.get());
     }
 }
